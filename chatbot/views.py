@@ -1,19 +1,25 @@
-import os
-import openai
+from django.shortcuts import render
 from django.http import JsonResponse
-from dotenv import load_dotenv
+from django.views.decorators.csrf import csrf_exempt
+import json
+from transformers import pipeline
 
-#.envファイルを読み込む
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Hugging Face のチャットボットモデルをロード
+chatbot_pipeline = pipeline("text-generation", model="microsoft/DialoGPT-medium")
 
+@csrf_exempt
 def chat(request):
-    user_message = request.GET.get("message", "")
+    if request.method == "POST":
+        data = json.loads(request.body)
+        user_input = data.get("message", "")
 
-    if not user_message:
-        return JsonResponse({"error":"メッセージを入力してください。"},status=400)
-    
-    response = openai.ChatCompletion.create(model="gpt-4", messages=[{"role":"user", "contnt": user_message}])
+        # モデルで応答を生成
+        response = chatbot_pipeline(user_input, max_length=100)[0]['generated_text']
 
-    ai_message = response["choices"][0]["message"]["content"]
-    return JsonResponse({"response": ai_message})
+        return JsonResponse({"response": response})
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+# ✅ 追加するべき関数（この関数がないと `NameError` になる）
+def chat_page(request):
+    return render(request, "chatbot/chat.html")
