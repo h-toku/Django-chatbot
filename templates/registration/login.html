@@ -1,0 +1,29 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン</title>
+    <link rel="stylesheet" href="{% static 'chatbot/styles.css' %}">
+</head>
+
+<body>
+
+    <!-- ログインページのコンテンツ -->
+    <div class="login-container">
+        <h2>ログイン</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="メールアドレス" required>
+            <input type="password" name="password" placeholder="パスワード" required>
+            <button type="submit">ログイン</button>
+        </form>
+        <p><a href="{% url 'register' %}" class="register-button">会員登録</a></p>
+    </div>
+
+</body>
+
+</html>

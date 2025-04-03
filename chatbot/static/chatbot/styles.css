@@ -1,0 +1,242 @@
+/* static/chatbot/styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: white;
+    margin: 0;
+    padding: 0;
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding-left: 30%;
+    /* 左側の余白 */
+    padding-right: 30%;
+    /* 右側の余白 */
+}
+
+.chat-box {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: white;
+    border-bottom: 1px solid #ddd;
+}
+
+
+.input-container {
+    display: flex;
+    align-items: center;
+    /* 縦方向の中央揃え */
+    justify-content: center;
+    /* 左揃え */
+    padding: 10px;
+    background-color: white;
+    border-top: 1px solid #ddd;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#user-input {
+    flex-grow: 1;
+    /* 可能な限り幅を広げる */
+    height: 50px;
+    /* ボタンと高さを統一 */
+    width: 350px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #bdbaba;
+    border-radius: 10px;
+    resize: none;
+    /* ユーザーが高さを変更できないように */
+    overflow-y: auto;
+    /* 縦スクロールを許可 */
+    margin-right: 10px;
+    /* 入力ボックスとボタンの間に余白を追加 */
+    justify-content: center;
+}
+
+#send-button {
+    height: 50px;
+    padding: 0 20px;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+#send-button:hover {
+    background-color: #45a049;
+}
+
+.message {
+    margin: 10px 0;
+}
+
+.user-message {
+    text-align: right;
+    color: blue;
+}
+
+.bot-message {
+    text-align: left;
+    color: #555;
+}
+
+.login-button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+
+.login-button:hover {
+    background-color: #45a049;
+}
+
+/* 会員登録ボタンのスタイル */
+/* 画面中央に配置するためのスタイル */
+.login-container {
+    width: 300px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* フォームのスタイル */
+.login-container form {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 入力フィールドのスタイル */
+.login-container input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    /* フィールド間の間隔を広げる */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    align-items: center;
+}
+
+/* ログインボタンのスタイル */
+.login-container button {
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* ログインボタンのホバー時 */
+.login-container button:hover {
+    background-color: #0056b3;
+}
+
+/* 会員登録ボタン */
+.register-link {
+    margin-top: 15px;
+}
+
+.register-button {
+    display: inline-block;
+    margin-top: 20px;
+    /* 会員登録リンクの間隔を広げる */
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.register-button:hover {
+    background-color: #218838;
+}
+
+/* ログイン・会員登録フォームを中央に配置 */
+.form-container {
+    width: 350px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* フォーム全体のスタイル */
+.form-container form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 入力フィールド */
+.form-container input {
+    margin: 5px 0;
+    padding: 10px;
+    width: 90%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    align-items: center;
+}
+
+/* ボタン共通スタイル */
+.form-container button {
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* ホバー時 */
+.form-container button:hover {
+    background-color: #0056b3;
+}
+
+/* ログインボタンの右上配置 */
+.fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: transparent;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: none;
+    z-index: 10;
+}
+
+.chat-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+    flex-grow: 1;
+    /* タイトルを左に配置 */
+}
