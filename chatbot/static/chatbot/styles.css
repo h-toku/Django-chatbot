@@ -76,16 +76,22 @@ body {
 
 .message {
     margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+    max-width: 80%;
+    word-wrap: break-word;
 }
 
 .user-message {
+    background-color: #d1f7d1;
     text-align: right;
     color: blue;
+    margin-left: auto;
 }
 
 .bot-message {
-    text-align: left;
-    color: #555;
+    background-color: #f0f0f0;
+    color: black;
 }
 
 .login-button {

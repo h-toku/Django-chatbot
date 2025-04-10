@@ -1,1 +1,8 @@
-openai
+Django
+anyio
+trabsformers
+torch
+numpy
+protobuf
+tiktoken
+blobfilele
