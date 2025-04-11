@@ -10,11 +10,20 @@
 </head>
 
 <body>
-    <!-- 固定ヘッダー部分 -->
-    <div class="fixed-header">
-        <h1 class="chat-title">AIチャットボット</h1>
-        <a href="{% url 'login' %}" class="login-button" target="_blank">ログイン/会員登録</a> <!-- ログインボタンが右端に配置される -->
-    </div>
+<!-- 固定ヘッダー部分 -->
+<div class="fixed-header">
+    <h1 class="chat-title">AIチャットボット</h1>
+    
+    {% if user.is_authenticated %}
+        <div class="user-info">
+            <span>Welcome {{ user.username }}!!</span>
+            <a href="{% url 'logout' %}" class="logout-button">ログアウト</a>
+        </div>
+    {% else %}
+        <a href="{% url 'login' %}" class="login-button" target="_blank">ログイン/会員登録</a>
+    {% endif %}
+</div>
+
 
     <!-- チャット画面 -->
     <div class="chat-container">

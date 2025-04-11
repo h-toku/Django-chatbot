@@ -6,3 +6,4 @@ numpy
 protobuf
 tiktoken
 blobfilele
+sentencepiece
