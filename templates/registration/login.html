@@ -13,11 +13,18 @@
 <body>
 
     <!-- ログインページのコンテンツ -->
-    <div class="login-container">
+    <div class="form-container">
         <h2>ログイン</h2>
+        
+        {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
         <form method="POST">
             {% csrf_token %}
-            <input type="text" name="username" placeholder="メールアドレス" required>
+            <input type="email" name="email" placeholder="メールアドレス" required>
             <input type="password" name="password" placeholder="パスワード" required>
             <button type="submit">ログイン</button>
         </form>

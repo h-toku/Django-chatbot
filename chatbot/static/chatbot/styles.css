@@ -110,7 +110,7 @@ body {
 /* 会員登録ボタンのスタイル */
 /* 画面中央に配置するためのスタイル */
 .login-container {
-    width: 300px;
+    width: 350px;
     padding: 20px;
     background-color: #f8f9fa;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
@@ -126,14 +126,14 @@ body {
 .login-container form {
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 /* 入力フィールドのスタイル */
 .login-container input {
-    width: 100%;
+    margin: 5px 0;
     padding: 10px;
-    margin: 10px 0;
-    /* フィールド間の間隔を広げる */
+    width: 90%;
     border: 1px solid #ccc;
     border-radius: 5px;
     align-items: center;
@@ -245,4 +245,13 @@ body {
     font-weight: bold;
     flex-grow: 1;
     /* タイトルを左に配置 */
+}
+
+.alert {
+    padding: 10px;
+    margin-bottom: 15px;
+    color: #fff;
+    background-color: #e74c3c;
+    border-radius: 4px;
+    text-align: center;
 }
