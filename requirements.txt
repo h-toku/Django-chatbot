@@ -1,9 +1,10 @@
 Django
 anyio
-trabsformers
+transformers
 torch
 numpy
 protobuf
 tiktoken
-blobfilele
+blobfile
 sentencepiece
+django_extensions
