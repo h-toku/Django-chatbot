@@ -32,12 +32,13 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
-    success_url = reverse_lazy('password_reset')  # 成功時に遷移するURL
-    email_template_name = 'registration/password_reset_email.html'  # メール本文テンプレート
+    success_url = reverse_lazy('password_reset_done')  # 成功時に遷移するURL
+    email_template_name = 'registration/password_reset_email.html'
+    subject_template_name = 'registration/password_reset_subject.txt'  # メール本文テンプレート
 
     def form_valid(self, form):
+        print("📨 パスワードリセットフォームがバリデーションOK")
         response = super().form_valid(form)
-        messages.success(self.request, 'パスワードリセットリンクが送信されました！')
         return response
 
 def user_login(request):
@@ -84,9 +85,9 @@ def register(request):
 
                 subject = "【AIチャットボット】メール認証のお願い"
                 from_email = "toku.chatbot@gmail.com"  # ← settings.pyと合わせておく
-                to_email = user.email
+                to_email = "registration/activate_email.txt"
                 text_content = "このメールはHTML表示に対応していない環境では読み取れません。"
-                html_content = render_to_string("registration/activate_email", {
+                html_content = render_to_string("registration/activate_email.html", {
                     'user': user,
                     'activation_link': activation_link,
                 })
