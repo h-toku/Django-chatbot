@@ -53,6 +53,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
 ROOT_URLCONF = 'mysite.urls'
 
 TEMPLATES = [
@@ -159,10 +161,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'chatbot.CustomUser'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'toku.chatbot@gmail.com'        # Gmailアドレス
-EMAIL_HOST_PASSWORD = 'sveq aoet pzbs lwjw'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#Gmailを使用する場合は以下をコメントアウトして設定
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#EMAIL_HOST = 'smtp.gmail.com'
+#EMAIL_PORT = 587
+#EMAIL_USE_TLS = True
+#EMAIL_HOST_USER = 'toku.chatbot@gmail.com'        # Gmailアドレス
+#EMAIL_HOST_PASSWORD = 'sveq aoet pzbs lwjw'
+#DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .forms import RegisterForm
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.contrib.sites.shortcuts import get_current_site
@@ -11,6 +11,12 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+import traceback
+from django.contrib.auth.views import PasswordResetCompleteView
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import PasswordResetView
+from django.urls import reverse_lazy
 
 class CustomLoginView(LoginView):
     template_name = 'registration/login.html'
@@ -18,6 +24,21 @@ class CustomLoginView(LoginView):
     def form_invalid(self, form):
         messages.error(self.request, 'メールアドレスかパスワードが間違っています。')
         return super().form_invalid(form)
+
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    def form_valid(self, form):
+        messages.success(self.request, "パスワードが正常にリセットされました。")
+        return redirect('login')  # ログインページにリダイレクト
+    
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'registration/password_reset_form.html'
+    success_url = reverse_lazy('password_reset')  # 成功時に遷移するURL
+    email_template_name = 'registration/password_reset_email.html'  # メール本文テンプレート
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, 'パスワードリセットリンクが送信されました！')
+        return response
 
 def user_login(request):
     if request.method == 'POST':
@@ -40,38 +61,57 @@ def user_logout(request):
 def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
+        print("📨 フォーム送信あり")
+        email = request.POST.get('email')
+        User = get_user_model()
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'このメールアドレスは既に登録されています。')
+            return redirect('register')
+        
         if form.is_valid():
+            print("✅ フォームバリデーションOK")
             user = form.save(commit=False)
             user.is_active = False  # 初期状態で非アクティブ
             user.save()
 
-            # メールを送信
-            token = default_token_generator.make_token(user)
-            uid = urlsafe_base64_encode(str(user.pk).encode()).decode()
-            domain = get_current_site(request).domain
-            activation_link = f"{get_current_site(request).domain}/activate/{uid}/{token}/"
-            # メール送信のロジック
-                        # ✅ メール送信
-            subject = "【AIチャットボット】メール認証のお願い"
-            from_email = "noreply@example.com"
-            to_email = user.email
-            text_content = "このメールはHTML表示に対応していない環境では読み取れません。"
-            html_content = render_to_string("emails/activation_email.html", {
-                'user': user,
-                'activation_link': activation_link,
-            })
+            try:
+                print("📧 メール送信処理に入る")
+                token = default_token_generator.make_token(user)
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                domain = get_current_site(request).domain
+                activation_link = f"http://{domain}/activate/{uid}/{token}/"
 
-            # ✅ HTMLメールを送信
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
-            msg.attach_alternative(html_content, "text/html")
-            msg.send()
-            messages.success(request, "認証メールを送信しました。")
-            return redirect('login')
+                subject = "【AIチャットボット】メール認証のお願い"
+                from_email = "toku.chatbot@gmail.com"  # ← settings.pyと合わせておく
+                to_email = user.email
+                text_content = "このメールはHTML表示に対応していない環境では読み取れません。"
+                html_content = render_to_string("registration/activate_email", {
+                    'user': user,
+                    'activation_link': activation_link,
+                })
+
+                msg = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
+                msg.attach_alternative(html_content, "text/html")
+                msg.send()
+
+                messages.success(request, "認証メールを送信しました。")
+            except Exception as e:
+                print("メール送信失敗:", e)
+                traceback.print_exc()
+                messages.error(request, "メール送信中にエラーが発生しました。")
+                
+            return redirect('register')
+        else:
+            print("❌ フォームエラー:", form.errors)
+            messages.error(request, '登録に失敗しました。もう一度お試しください。')
     else:
         form = RegisterForm()
+
     return render(request, 'registration/register.html', {'form': form})
 
 def activate(request, uidb64, token):
+    User = get_user_model()
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
@@ -89,6 +129,7 @@ def activate(request, uidb64, token):
         return redirect('login')
     
 def login_view(request):
+    User = get_user_model()
     if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
@@ -105,3 +146,22 @@ def login_view(request):
             messages.error(request, 'ユーザーが存在しません')
 
     return render(request, 'registration/login.html')
+
+@login_required
+def account_delete(request):
+    if request.method == "POST":
+        user = request.user
+        user.delete()  # ユーザーの削除
+        return redirect('account_deleted')  # 退会後に遷移するページ（退会完了ページ）
+
+    return render(request, 'account_delete.html')
+
+@login_required
+def account_delete(request):
+    if request.method == "POST":
+        user = request.user
+        user.delete()  # ユーザーの削除
+        messages.success(request, "アカウントが正常に削除されました。")
+        return redirect('login')  # ログインページにリダイレクト
+
+    return render(request, 'account_delete.html')
