@@ -8,3 +8,5 @@ tiktoken
 blobfile
 sentencepiece
 django_extensions
+typing_extensions
+mysqlclient

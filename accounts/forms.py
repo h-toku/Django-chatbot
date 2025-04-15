@@ -5,6 +5,9 @@ from django.core.exceptions import ValidationError
 from accounts.models import CustomUser
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class RegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
@@ -18,6 +21,11 @@ class RegisterForm(forms.ModelForm):
         cleaned_data = super().clean()
         password = cleaned_data.get("password")
         confirm_password = cleaned_data.get("confirm_password")
+        email = cleaned_data.get("email")
+
+        # メールアドレスの重複チェック
+        if CustomUser.objects.filter(email=email).exists():
+            raise ValidationError("このメールアドレスは既に登録されています。")
 
         # パスワードが一致しない場合
         if password and confirm_password and password != confirm_password:
