@@ -4,7 +4,7 @@ from django.contrib.auth import views as auth_views
 from chatbot.views import home
 
 urlpatterns = [
-    path('', home, name='home'),  # チャット画面の表示
+    path('', home, name='home'), 
     path('api/chat/', views.chat, name='chat_api'),  # APIエンドポイント
     path('chat/', views.chat, name='chat'),
 ]
