@@ -6,8 +6,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from django.contrib.auth.decorators import login_required
 
 # モデルとトークナイザーの読み込み
-model = AutoModelForCausalLM.from_pretrained("rinna/japanese-gpt-neox-3.6b")
-tokenizer = AutoTokenizer.from_pretrained("rinna/japanese-gpt-neox-3.6b")
+model = AutoModelForCausalLM.from_pretrained("rinna/japanese-gpt2-medium")
+tokenizer = AutoTokenizer.from_pretrained("rinna/japanese-gpt2-medium")
 
 def chat_page(request):
     return render(request, 'chatbot/chat.html')
