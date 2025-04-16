@@ -1,9 +1,12 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 import re
 from .models import Message
 from django.contrib.auth.decorators import login_required
 from .utils import query_huggingface
+
+def home(request):
+    return redirect('/chat')
 
 def chatbot_view(request):
     if request.method == 'POST':
@@ -59,7 +62,7 @@ def chat(request):
 
                 prompt = "\n".join(lines)
                 print(prompt)
-                
+
                 response = query_huggingface(prompt)
 
                 response = re.sub(r"http\S+|pic\.twitter\.com/\S+|<unk>", "", response).strip()
