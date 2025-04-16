@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // フォームの送信イベントリスナーを追加
     const form = document.getElementById("chat-form");
     if (!form.hasAttribute('data-listener-added')) {  // リスナーが追加されていなければ
         form.addEventListener("submit", function (event) {
@@ -7,7 +8,11 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         form.setAttribute('data-listener-added', 'true');  // リスナーを追加したことをマーク
     }
-    console.log("Event listener added to form.");  // リスナー追加の確認
+
+    console.log("Event listener added to form.");
+
+    // 履歴の描画
+    renderHistory();  // 履歴の描画関数を呼び出し
 });
 
 // CSRFトークンを取得する関数
@@ -19,22 +24,18 @@ function getCsrfToken() {
 
 // メッセージ送信の関数
 function sendMessage() {
-    // 送信ボタンの状態変更をここで確認
     const sendButton = document.getElementById("send-button");
     sendButton.disabled = true;  // 送信ボタンを無効化
     console.log("Send button disabled.");
     
-    // 入力ボックスの参照を取得
     const userInputElement = document.getElementById("user-input");
-    const userInput = userInputElement.value.trim();  // ユーザー入力を取得
+    const userInput = userInputElement.value.trim();
     console.log("User input:", userInput);
     
-    // 入力がある場合のみ送信処理
     if (userInput) {
         appendMessage(userInput, "user");
         userInputElement.value = "";  // 入力フィールドを空にする
 
-        // CSRFトークンを取得
         const csrfToken = getCsrfToken();
 
         console.log("Sending message...");
@@ -42,7 +43,7 @@ function sendMessage() {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "X-CSRFToken": csrfToken  // CSRFトークンをヘッダーに追加
+                "X-CSRFToken": csrfToken
             },
             body: "user_input=" + encodeURIComponent(userInput)
         })
@@ -67,16 +68,14 @@ function sendMessage() {
         console.log("Message sent to server.");
     } else {
         console.log("User input is empty, message not sent.");
-        sendButton.disabled = false;  // ユーザー入力が空ならボタンを再度有効化
+        sendButton.disabled = false;
     }
-    console.log("Message sent.");
 }
 
 // メッセージをチャットボックスに追加する関数
 function appendMessage(message, sender) {
     const chatBox = document.getElementById("chat-box");
 
-    // メッセージの要素を作成
     const messageElement = document.createElement("div");
     messageElement.classList.add("message");
     
@@ -86,9 +85,19 @@ function appendMessage(message, sender) {
         messageElement.classList.add("bot-message");
     }
 
-    // メッセージを表示
     messageElement.innerText = message;
-
-    // チャットボックスにメッセージを追加
     chatBox.appendChild(messageElement);
+}
+
+// ページ初期表示時に履歴を描画する関数
+function renderHistory() {
+    if (typeof chatHistory === 'undefined') {
+        console.warn("chatHistory is not defined.");
+        return;
+    }
+
+    chatHistory.forEach(msg => {
+        const sender = msg.role === 'user' ? 'user' : 'bot';
+        appendMessage(msg.text, sender);
+    });
 }

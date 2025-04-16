@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -39,6 +40,14 @@
         </div>
     </div>
 
+    <script id="chat-history" type="application/json">
+        {{ chat_history|json_script:"chat-history" }}
+    </script>
+
+    <script>
+        const chatHistory = JSON.parse(document.getElementById("chat-history-data").textContent);
+    </script>
+    
     <script src="{% static 'chatbot/chat.js' %}"></script>
 </body>
 
