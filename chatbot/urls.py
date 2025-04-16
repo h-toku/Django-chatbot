@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from chatbot.views import home
 
 urlpatterns = [
     path('', home, name='home'),  # チャット画面の表示
