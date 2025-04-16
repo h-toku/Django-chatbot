@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from .utils import query_huggingface
 
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'chatbot/home.html')
 
 def chatbot_view(request):
     if request.method == 'POST':
