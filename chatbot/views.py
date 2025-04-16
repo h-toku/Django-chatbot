@@ -2,12 +2,18 @@ from django.shortcuts import render
 from django.http import JsonResponse
 import re
 from .models import Message
-from transformers import AutoModelForCausalLM, AutoTokenizer
 from django.contrib.auth.decorators import login_required
+from .utils import query_huggingface
 
-# モデルとトークナイザーの読み込み
-model = AutoModelForCausalLM.from_pretrained("rinna/japanese-gpt2-medium")
-tokenizer = AutoTokenizer.from_pretrained("rinna/japanese-gpt2-medium")
+def chatbot_view(request):
+    if request.method == 'POST':
+        user_input = request.POST.get('message', '')
+        prompt = f"ユーザー: {user_input}\nAI:"
+        try:
+            reply = query_huggingface(prompt)
+        except Exception as e:
+            reply = f"エラーが発生しました: {str(e)}"
+        return JsonResponse({'response': reply})
 
 def chat_page(request):
     return render(request, 'chatbot/chat.html')
@@ -53,23 +59,9 @@ def chat(request):
 
                 prompt = "\n".join(lines)
                 print(prompt)
+                
+                response = query_huggingface(prompt)
 
-                # トークナイズと生成
-                inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512)
-                input_ids = inputs["input_ids"]
-                attention_mask = inputs["attention_mask"]
-
-                outputs = model.generate(
-                            input_ids,
-                            attention_mask=attention_mask,
-                            do_sample=True,  # サンプリングを有効にする
-                            top_p=0.95,
-                            top_k=50,
-                            temperature=1.0,
-                            max_length=input_ids.shape[1] + 50,
-                            pad_token_id=tokenizer.pad_token_id
-                        )
-                response = tokenizer.decode(outputs[0][input_ids.shape[1]:], skip_special_tokens=True)
                 response = re.sub(r"http\S+|pic\.twitter\.com/\S+|<unk>", "", response).strip()
 
                 # ログイン時のみ履歴保存
