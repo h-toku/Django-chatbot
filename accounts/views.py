@@ -27,8 +27,11 @@ class CustomLoginView(LoginView):
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     def form_valid(self, form):
+        # パスワードリセット後に自動的にログインする処理
+        user = form.save()
+        login(self.request, user)
         messages.success(self.request, "パスワードが正常にリセットされました。")
-        return redirect('login')  # ログインページにリダイレクト
+        return redirect('chat_page')  # チャットページにリダイレクト
     
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
@@ -116,7 +119,7 @@ def activate(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
-    except Exception:
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
     if user and default_token_generator.check_token(user, token):
@@ -124,38 +127,24 @@ def activate(request, uidb64, token):
         user.save()
         login(request, user)
         messages.success(request, 'メール認証が完了しました。ログインされました。')
-        return redirect('chat_page')  # 適切なページへ
+        return redirect('chat_page')
     else:
         messages.error(request, 'リンクが無効です。')
         return redirect('login')
     
 def login_view(request):
-    User = get_user_model()
     if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
 
-        try:
-            user = User.objects.get(email=email)
-            user = authenticate(request, username=user.username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('chat_page')
-            else:
-                messages.error(request, 'メールアドレスまたはパスワードが正しくありません')
-        except User.DoesNotExist:
-            messages.error(request, 'ユーザーが存在しません')
+        user = authenticate(request, username=email, password=password)  # ユーザー名をemailに変更
+        if user is not None:
+            login(request, user)
+            return redirect('chat_page')
+        else:
+            messages.error(request, 'メールアドレスまたはパスワードが正しくありません')
 
     return render(request, 'registration/login.html')
-
-@login_required
-def account_delete(request):
-    if request.method == "POST":
-        user = request.user
-        user.delete()  # ユーザーの削除
-        return redirect('account_deleted')  # 退会後に遷移するページ（退会完了ページ）
-
-    return render(request, 'account_delete.html')
 
 @login_required
 def account_delete(request):
@@ -166,3 +155,4 @@ def account_delete(request):
         return redirect('login')  # ログインページにリダイレクト
 
     return render(request, 'account_delete.html')
+
