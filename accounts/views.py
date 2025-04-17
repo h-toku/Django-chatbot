@@ -88,7 +88,7 @@ def register(request):
 
                 subject = "【AIチャットボット】メール認証のお願い"
                 from_email = "toku.chatbot@gmail.com"  # ← settings.pyと合わせておく
-                to_email = "registration/activate_email.txt"
+                to_email = user.email
                 text_content = "このメールはHTML表示に対応していない環境では読み取れません。"
                 html_content = render_to_string("registration/activate_email.html", {
                     'user': user,

@@ -1,22 +1,31 @@
+version: '3.9'
+
 services:
   web:
     build: .
-    container_name: django_app
+    container_name: chatbot_django
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - .:/code
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     depends_on:
       - db
 
   db:
-    image: mysql:5.7
-    container_name: mysql_db
+    image: postgres:15
+    container_name: chatbot_postgres
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: mydatabase
-      MYSQL_USER: myuser
-      MYSQL_PASSWORD: mypassword
+      POSTGRES_DB: chatbot_db_8gmv
+      POSTGRES_USER: chatbot_db_8gmv_user
+      POSTGRES_PASSWORD: iC9I5ae6BDaJgyyeiNnFHzGa7gpOifYk
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     ports:
-      - "3306:3306"
+      - "5432:5432"
+
+volumes:
+  postgres_data:

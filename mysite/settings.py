@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import dj_database_url
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -82,7 +84,6 @@ STATIC_URL = '/static/'
 # 静的ファイルのディレクトリを指定
 STATICFILES_DIRS = [
     BASE_DIR / 'chatbot' / 'static',
-    os.path.join(BASE_DIR, 'static')
 ]
 
 WSGI_APPLICATION = 'mysite.wsgi.application'
@@ -93,11 +94,10 @@ LOGIN_URL = '/accounts/login/'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+load_dotenv()
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
 }
 
 
@@ -168,10 +168,11 @@ AUTH_USER_MODEL = 'chatbot.CustomUser'
 
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 #Gmailを使用する場合は以下をコメントアウトして設定
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'in-v3.mailjet.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'toku.chatbot@gmail.com'        # Gmailアドレス
-EMAIL_HOST_PASSWORD = 'sveq aoet pzbs lwjw'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_HOST_USER = '2df79004e826ba13769e3627dc90ce2e'        # 例: 8f5d3f8ab9eXXXXX
+EMAIL_HOST_PASSWORD = '218bfc23f541acdf6fe036f9c14a9245'  # 例: b721d91e1e2fXXXXX
+DEFAULT_FROM_EMAIL = 'toku.chatbot@gmail.com'.split()

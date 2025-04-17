@@ -11,3 +11,7 @@ django_extensions
 typing_extensions
 mysqlclient
 gunicorn
+python-decouple
+psycopg2-binary
+dj-database-url
+python-dotenv
