@@ -1,9 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import re
 from .models import Message
 from django.contrib.auth.decorators import login_required
 from .utils import query_huggingface
+from .models import Conversation
 
 def home(request):
     return render(request, 'chatbot/home.html')
@@ -19,7 +21,7 @@ def chatbot_view(request):
         return JsonResponse({'response': reply})
 
 def chat_page(request):
-    return render(request, 'chatbot/chat.html')
+    return render(request, 'chatbot/chatbot/')
 
 def get_prompt_from_history(session_id, latest_user_input, max_messages=10):
     messages = Message.objects.filter(session_id=session_id).order_by('-timestamp')[:max_messages][::-1]
@@ -45,7 +47,7 @@ def chat(request):
             messages = Message.objects.filter(session_id=session_id).order_by('timestamp')
         else:
             messages = []  # 履歴を表示しない
-        return render(request, 'chat.html', {'messages': messages})
+        return render(request, 'chatbot/chat.html', {'messages': messages})
 
     if request.method == 'POST':
         user_input = request.POST.get('user_input', '').strip()
@@ -84,7 +86,7 @@ def chat(request):
             messages = Message.objects.filter(session_id=session_id).order_by('timestamp')
         else:
             messages = []  # 非ログイン時は履歴を表示しない
-        return render(request, 'chat.html', {'messages': messages})
+        return render(request, 'chatbot/chatbot/', {'messages': messages})
 
 def save_message(request, session_id, role, text):
     # ログインしている場合のみ履歴を保存
@@ -106,4 +108,33 @@ def chat_view(request):
     user = request.user
     messages = Message.objects.filter(user=user).order_by('timestamp')
     message_list = [{'role': m.role, 'text': m.text} for m in messages]
-    return render(request, 'chat.html', {'messages': message_list})
+    return render(request, 'chatbot/chatbot/', {'messages': message_list})
+
+@csrf_exempt
+@login_required
+def save_conversation(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        prompt = data.get('prompt')
+        response = data.get('response')
+
+        convo = Conversation.objects.create(
+            user=request.user,
+            prompt=prompt,
+            response=response
+        )
+        return JsonResponse({'status': 'success', 'id': convo.id})
+    
+    return JsonResponse({'error': 'POST only'}, status=400)
+
+@login_required
+def get_conversation_history(request):
+    conversations = request.user.conversations.order_by('-timestamp')
+    data = [
+        {
+            'prompt': convo.prompt,
+            'response': convo.response,
+            'timestamp': convo.timestamp.isoformat()
+        } for convo in conversations
+    ]
+    return JsonResponse({'history': data})

@@ -6,6 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>会員登録</title>
     <link rel="stylesheet" href="{% static 'chatbot/styles.css' %}">
+    <style>
+        .error-message {
+            color: red;
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
@@ -37,7 +44,7 @@
     </form>
 
     <p><a href="{% url 'login' %}" class="register-button">ログインページへ</a></p>
-    <p><a href="{% url 'chat_page' %}">chatへ戻る</a></p>
+    <p><a href="{% url 'chat' %}">chatへ戻る</a></p>
 </div>
 
 <script>
@@ -69,17 +76,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // ユーザー名
         if (!fields.username.value.trim()) {
-            errors.username.textContent = 'ユーザー名を入力してください';
+            errors.username.textContent = '※ユーザー名を入力してください';
             isValid = false;
         }
 
         // メール形式
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!fields.email.value.trim()) {
-            errors.email.textContent = 'メールアドレスを入力してください';
+            errors.email.textContent = '※メールアドレスを入力してください';
             isValid = false;
         } else if (!emailPattern.test(fields.email.value)) {
-            errors.email.textContent = 'メールアドレスの形式が不正です';
+            errors.email.textContent = '※メールアドレスの形式が不正です';
             isValid = false;
         }
 
@@ -89,16 +96,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const pwPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
 
         if (!pw) {
-            errors.password.textContent = 'パスワードを入力してください';
+            errors.password.textContent = '※パスワードを入力してください';
             isValid = false;
         } else if (!pwPattern.test(pw)) {
-            errors.password.textContent = 'パスワードは6文字以上で英数字を含めてください';
+            errors.password.textContent = '※パスワードは6文字以上で英数字を含めてください';
             isValid = false;
         }
 
         // 確認
         if (pw !== pwc) {
-            errors.password_confirm.textContent = 'パスワードが一致しません';
+            errors.password_confirm.textContent = '※パスワードが一致しません';
             isValid = false;
         }
 

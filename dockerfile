@@ -1,25 +1,21 @@
 # ベースイメージ
-FROM python:3.13-slim
+FROM python:3.12
 
-# 作業ディレクトリを作成・設定
-WORKDIR /app
-
-# 必要なパッケージインストール（mariadb clientに変更）
+# 必要なシステムパッケージ（PostgreSQLクライアント）をインストール
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    cmake \
-    pkg-config \
-    libmariadb-dev \
-    git \
-    curl \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    libpq-dev \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
 
-# requirements.txt をコピーしてインストール
+# 作業ディレクトリを作成
+WORKDIR /code
+
+# 依存ファイルをコピーしてインストール
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# プロジェクトファイルをすべてコピー
+# プロジェクトコードをコピー
 COPY . .
 
-# Djangoサーバー起動コマンド
+# コンテナ起動時に実行するコマンド（必要に応じて）
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

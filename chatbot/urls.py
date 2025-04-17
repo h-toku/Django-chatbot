@@ -4,7 +4,8 @@ from django.contrib.auth import views as auth_views
 from chatbot.views import home
 
 urlpatterns = [
-    path('', home, name='home'), 
     path('api/chat/', views.chat, name='chat_api'),  # APIエンドポイント
-    path('chat/', views.chat, name='chat'),
+    path('', views.chat, name='chat'),
+    path('save/', views.save_conversation, name='save_conversation'),
+    path('history/', views.get_conversation_history, name='get_conversation_history'),
 ]
