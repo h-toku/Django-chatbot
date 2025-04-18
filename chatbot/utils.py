@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/rinna/japanese-gpt-neox-3.6b"
+HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/line-corporation/japanese-large-lm-3.6b"
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")  # ←ここにアクセストークンを記載（.env化推奨）
 
 headers = {

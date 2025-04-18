@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <title>メールアドレス認証</title>
 </head>
-<body>
-    <p>{{ user.username }}さん、こんにちは。</p>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <p>{{ user.username }} さん、こんにちは。</p>
     <p>以下のリンクをクリックして、メールアドレスの確認を完了してください：</p>
-    <p><a href="{{ activation_link }}">{{ activation_link }}</a></p>
+    <p><a href="{{ activation_link }}" style="color: #1a73e8;">{{ activation_link }}</a></p>
     <p>このリンクは一定時間で無効になります。</p>
 </body>
 </html>
