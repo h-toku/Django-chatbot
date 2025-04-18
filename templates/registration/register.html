@@ -20,9 +20,13 @@
     <h2>会員登録</h2>
 
     {% if messages %}
+    <ul class="alert">
         {% for message in messages %}
-            <div class="alert">{{ message }}</div>
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+            {{ message }}
+        </li>
         {% endfor %}
+    </ul>
     {% endif %}
 
     <form id="register-form" method="POST" novalidate>

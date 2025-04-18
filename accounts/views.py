@@ -17,6 +17,11 @@ from django.contrib.auth.views import PasswordResetCompleteView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
+from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class CustomLoginView(LoginView):
     template_name = 'registration/login.html'
@@ -65,49 +70,51 @@ def user_logout(request):
 def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
-        print("📨 フォーム送信あり")
+        logger.info("📨 フォーム送信あり")
         email = request.POST.get('email')
         User = get_user_model()
 
         if User.objects.filter(email=email).exists():
+            logger.info("メールアドレスが既に登録されています:", email)
             messages.error(request, 'このメールアドレスは既に登録されています。')
             return redirect('register')
+            
         
         if form.is_valid():
-            print("✅ フォームバリデーションOK")
+            logger.info("✅ フォームバリデーションOK")
             user = form.save(commit=False)
             user.is_active = False  # 初期状態で非アクティブ
             user.save()
 
             try:
-                print("📧 メール送信処理に入る")
+                logger.info("📧 メール送信処理に入る")
                 token = default_token_generator.make_token(user)
                 uid = urlsafe_base64_encode(force_bytes(user.pk))
                 domain = get_current_site(request).domain
                 activation_link = f"http://{domain}/activate/{uid}/{token}/"
-
+            
                 subject = "【AIチャットボット】メール認証のお願い"
-                from_email = "toku.chatbot@gmail.com"  # ← settings.pyと合わせておく
+                from_email = settings.DEFAULT_FROM_EMAIL
                 to_email = user.email
                 text_content = "このメールはHTML表示に対応していない環境では読み取れません。"
                 html_content = render_to_string("registration/activate_email.html", {
                     'user': user,
                     'activation_link': activation_link,
                 })
-
+            
                 msg = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
                 msg.attach_alternative(html_content, "text/html")
                 msg.send()
-
+            
                 messages.success(request, "認証メールを送信しました。")
             except Exception as e:
-                print("メール送信失敗:", e)
+                logger.error(f"メール送信失敗: {str(e)}")
                 traceback.print_exc()
                 messages.error(request, "メール送信中にエラーが発生しました。")
                 
             return redirect('register')
         else:
-            print("❌ フォームエラー:", form.errors)
+            logger.info("❌ フォームエラー:", form.errors)
             messages.error(request, '登録に失敗しました。もう一度お試しください。')
     else:
         form = RegisterForm()
@@ -131,6 +138,41 @@ def activate(request, uidb64, token):
     else:
         messages.error(request, 'リンクが無効です。')
         return redirect('login')
+    
+def password_reset(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        User = get_user_model()
+
+        try:
+            user = User.objects.get(email=email)
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            domain = get_current_site(request).domain
+            activation_link = f"http://{domain}/reset/{uid}/{token}/"
+
+            subject = "【AIチャットボット】パスワードリセットのお願い"
+            from_email = settings.DEFAULT_FROM_EMAIL
+            to_email = user.email
+            text_content = "このメールはHTML表示に対応していない環境では読み取れません。"
+            html_content = render_to_string("registration/password_reset_email.html", {
+                'user': user,
+                'activation_link': activation_link,
+            })
+
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+
+            messages.success(request, "パスワードリセットメールを送信しました。")
+            return redirect('login')  # パスワードリセット後はログインページにリダイレクト
+
+        except User.DoesNotExist:
+            messages.error(request, 'このメールアドレスは登録されていません。')
+        except Exception as e:
+            messages.error(request, f"予期しないエラーが発生しました: {str(e)}")
+
+    return render(request, 'registration/password_reset_form.html')
     
 def login_view(request):
     if request.method == 'POST':

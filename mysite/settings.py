@@ -175,4 +175,28 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = '2df79004e826ba13769e3627dc90ce2e'        # 例: 8f5d3f8ab9eXXXXX
 EMAIL_HOST_PASSWORD = '218bfc23f541acdf6fe036f9c14a9245'  # 例: b721d91e1e2fXXXXX
-DEFAULT_FROM_EMAIL = 'toku.chatbot@gmail.com'.split()
+DEFAULT_FROM_EMAIL = 'toku.chatbot@gmail.com'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+    'class': 'logging.FileHandler',
+    'filename': os.path.join(BASE_DIR, 'logs', 'debug.log'),
+},
+    },
+    'loggers': {
+        'django.core.mail': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+        },
+        'accounts': {  # アカウントアプリのログ
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+        },
+    },
+}
