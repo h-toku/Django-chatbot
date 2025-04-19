@@ -1,140 +1,95 @@
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-import re
-from .models import Message
 from django.contrib.auth.decorators import login_required
-from .utils import query_huggingface
-from .models import Conversation
+import json
+import re
+from .models import Message, Conversation
+from .utils import generate_text
 
 def home(request):
     return render(request, 'chatbot/home.html')
 
-def chatbot_view(request):
-    if request.method == 'POST':
-        user_input = request.POST.get('message', '')
-        prompt = f"ユーザー: {user_input}\nAI:"
-        try:
-            reply = query_huggingface(prompt)
-        except Exception as e:
-            reply = f"エラーが発生しました: {str(e)}"
-        return JsonResponse({'response': reply})
-
-def chat_page(request):
-    return render(request, 'chatbot/chatbot/')
-
 def get_prompt_from_history(session_id, latest_user_input, max_messages=10):
+    """履歴からプロンプトを生成する"""
     messages = Message.objects.filter(session_id=session_id).order_by('-timestamp')[:max_messages][::-1]
     lines = []
 
-    for m in messages:
-        if m.role == 'user':
-            lines.append(f"ユーザー: {m.text}")
-        else:
-            lines.append(f"AI: {m.text}")
-
+    if messages:
+        for m in messages:
+            role = "ユーザー" if m.role == "user" else "AI"
+            lines.append(f"{role}: {m.text}")
     lines.append(f"ユーザー: {latest_user_input}")
     lines.append("AI:")
-
     return "\n".join(lines)
 
 def chat(request):
+    """チャットの主要なビュー"""
     session_id = request.session.session_key or request.session.create()
-
-    if request.method == 'GET':
-        # 非ログイン時は履歴表示しない
-        if request.user.is_authenticated:
-            messages = Message.objects.filter(session_id=session_id).order_by('timestamp')
-        else:
-            messages = []  # 履歴を表示しない
-        return render(request, 'chatbot/chat.html', {'messages': messages})
 
     if request.method == 'POST':
         user_input = request.POST.get('user_input', '').strip()
-        if user_input:
-            try:
-                # 履歴からプロンプト作成
-                messages = Message.objects.filter(session_id=session_id).order_by('-timestamp')[:10][::-1]
-                lines = []
-                for m in messages:
-                    role = "ユーザー" if m.role == "user" else "AI"
-                    lines.append(f"{role}: {m.text}")
-                lines.append(f"ユーザー: {user_input}")
-                lines.append("AI:")
-
-                prompt = "\n".join(lines)
-                print(prompt)
-
-                response = query_huggingface(prompt)
-
-                response = re.sub(r"http\S+|pic\.twitter\.com/\S+|<unk>", "", response).strip()
-
-                # ログイン時のみ履歴保存
-                if request.user.is_authenticated:
-                    Message.objects.create(session_id=session_id, role='user', text=user_input)
-                    Message.objects.create(session_id=session_id, role='ai', text=response)
-
-                return JsonResponse({"response": response})
-            except Exception as e:
-                return JsonResponse({"response": f"AIエラー: {str(e)}"})
-        else:
+        if not user_input:
             return JsonResponse({"response": "入力が空です。"})
+        
+        try:
+            # プロンプト生成と応答取得
+            prompt = get_prompt_from_history(session_id, user_input)
+            response = generate_text(prompt)
+            response = re.sub(r"http\S+|pic\.twitter\.com/\S+|<unk>", "", response).strip()
+            response = re.sub(r'\s+', ' ', response).strip()
 
-    else:
-        # GET時に履歴を取得してテンプレートへ渡す
-        if request.user.is_authenticated:
-            messages = Message.objects.filter(session_id=session_id).order_by('timestamp')
-        else:
-            messages = []  # 非ログイン時は履歴を表示しない
-        return render(request, 'chatbot/chatbot/', {'messages': messages})
+            # ログイン時のみ履歴保存
+            if request.user.is_authenticated:
+                Message.objects.bulk_create([
+                    Message(session_id=session_id, role='user', text=user_input),
+                    Message(session_id=session_id, role='ai', text=response)
+                ])
 
-def save_message(request, session_id, role, text):
-    # ログインしている場合のみ履歴を保存
-    if request.user.is_authenticated:
-        Message.objects.create(session_id=session_id, role=role, text=text)
+            return JsonResponse({"response": response})
+        except Exception as e:
+            return JsonResponse({"response": f"AIエラー: {str(e)}"})
 
+    # GET時の処理
+    messages = Message.objects.filter(session_id=session_id).order_by('timestamp') if request.user.is_authenticated else []
+    return render(request, 'chatbot/chat.html', {'messages': messages})
+
+@login_required
 def chat_history(request):
+    """チャット履歴を取得"""
     session_id = request.session.session_key
     if not session_id:
         return JsonResponse({"history": []})
 
     messages = Message.objects.filter(session_id=session_id).order_by('timestamp')
     history = [{"role": m.role, "text": m.text} for m in messages]
-
     return JsonResponse({"history": history})
-
-@login_required
-def chat_view(request):
-    user = request.user
-    messages = Message.objects.filter(user=user).order_by('timestamp')
-    message_list = [{'role': m.role, 'text': m.text} for m in messages]
-    return render(request, 'chatbot/chatbot/', {'messages': message_list})
 
 @csrf_exempt
 @login_required
 def save_conversation(request):
-    if request.method == 'POST':
+    """会話を保存"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=400)
+    
+    try:
         data = json.loads(request.body)
-        prompt = data.get('prompt')
-        response = data.get('response')
-
         convo = Conversation.objects.create(
             user=request.user,
-            prompt=prompt,
-            response=response
+            prompt=data.get('prompt'),
+            response=data.get('response')
         )
         return JsonResponse({'status': 'success', 'id': convo.id})
-    
-    return JsonResponse({'error': 'POST only'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 @login_required
 def get_conversation_history(request):
+    """保存された会話履歴を取得"""
     conversations = request.user.conversations.order_by('-timestamp')
-    data = [
-        {
-            'prompt': convo.prompt,
-            'response': convo.response,
-            'timestamp': convo.timestamp.isoformat()
-        } for convo in conversations
-    ]
+    data = [{
+        'prompt': convo.prompt,
+        'response': convo.response,
+        'timestamp': convo.timestamp.isoformat()
+    } for convo in conversations]
     return JsonResponse({'history': data})
