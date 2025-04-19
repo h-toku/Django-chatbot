@@ -34,36 +34,40 @@ function sendMessage() {
     
     if (userInput) {
         appendMessage(userInput, "user");
+        
         userInputElement.value = "";  // 入力フィールドを空にする
+        console.log("typingElement:", typingElement);
 
         const csrfToken = getCsrfToken();
 
         console.log("Sending message...");
-        fetch("/chat/api/chat/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-CSRFToken": csrfToken
-            },
-            body: "user_input=" + encodeURIComponent(userInput)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data && data.response) {
-                console.log("Response data:", data.response);
-                appendMessage(data.response, "bot");
-            } else {
-                console.error("No response data received.");
-                appendMessage("AIからの応答がありませんでした。", "bot");
-            }
-        })
-        .catch(error => {
-            console.error("Error during fetch:", error);
-            appendMessage("通信エラーが発生しました。", "bot");
-        })
-        .finally(() => {
-            sendButton.disabled = false;  // 送信ボタンを再度有効化
-        });
+        setTimeout(() => {
+            fetch("/chat/api/chat/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": csrfToken
+                },
+                body: "user_input=" + encodeURIComponent(userInput)
+            })
+            .then(response => response.json())
+            .then(data => {
+                typingElement.remove();  // ← ここで削除
+        
+                if (data && data.response) {
+                    appendMessage(data.response, "bot");
+                } else {
+                    appendMessage("AIからの応答がありませんでした。", "bot");
+                }
+            })
+            .catch(error => {
+                typingElement.remove();
+                appendMessage("通信エラーが発生しました。", "bot");
+            })
+            .finally(() => {
+                sendButton.disabled = false;
+            });
+        }, 100);  // ← 100ミリ秒遅らせて「入力中...」が確実に表示されるように
 
         console.log("Message sent to server.");
     } else {
@@ -81,12 +85,17 @@ function appendMessage(message, sender) {
     
     if (sender === "user") {
         messageElement.classList.add("user-message");
+        appendMessage("入力中...", "bot", true);
+        console.log("Typing element added.");
     } else {
         messageElement.classList.add("bot-message");
     }
 
     messageElement.innerText = message;
     chatBox.appendChild(messageElement);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    return returnElement ? messageElement : undefined;
 }
 
 // ページ初期表示時に履歴を描画する関数
