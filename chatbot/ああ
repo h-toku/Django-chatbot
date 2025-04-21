@@ -1,0 +1,56 @@
+Event listener added to form.
+chat.js:104 chatHistory is not defined.
+renderHistory @ chat.js:104
+(anonymous) @ chat.js:15Understand this warning
+chat.js:29 Send button disabled.
+chat.js:33 User input: お元気ですか？
+chat.js:98 Uncaught ReferenceError: returnElement is not defined
+    at appendMessage (chat.js:98:5)
+    at appendMessage (chat.js:88:9)
+    at sendMessage (chat.js:36:9)
+    at HTMLFormElement.<anonymous> (chat.js:7:13)
+
+    Event listener added to form.
+chat.js:104 chatHistory is not defined.
+renderHistory @ chat.js:104
+(anonymous) @ chat.js:15Understand this warning
+chat.js:29 Send button disabled.
+chat.js:33 User input: お元気ですか？
+chat.js:98 Uncaught ReferenceError: returnElement is not defined
+    at appendMessage (chat.js:98:5)
+    at appendMessage (chat.js:88:9)
+    at sendMessage (chat.js:36:9)
+    at HTMLFormElement.<anonymous> (chat.js:7:13)
+
+Event listener added to form.
+chat.js:104 chatHistory is not defined.
+renderHistory	@	chat.js:104
+(anonymous)	@	chat.js:15
+chat.js:29 Send button disabled.
+chat.js:33 User input: お元気ですか？
+chat.js:98 Uncaught ReferenceError: returnElement is not defined
+    at appendMessage (chat.js:98:5)
+    at appendMessage (chat.js:88:9)
+    at sendMessage (chat.js:36:9)
+    at HTMLFormElement.<anonymous> (chat.js:7:13)
+appendMessage	@	chat.js:98
+appendMessage	@	chat.js:88
+sendMessage	@	chat.js:36
+(anonymous)	@	chat.js:7
+
+Event listener added to form.
+chat.js:104 chatHistory is not defined.
+renderHistory	@	chat.js:104
+(anonymous)	@	chat.js:15
+
+chat.js:29 Send button disabled.
+chat.js:33 User input: お元気ですか？
+chat.js:98 Uncaught ReferenceError: returnElement is not defined
+    at appendMessage (chat.js:98:5)
+    at appendMessage (chat.js:88:9)
+    at sendMessage (chat.js:36:9)
+    at HTMLFormElement.<anonymous> (chat.js:7:13)
+appendMessage	@	chat.js:98
+appendMessage	@	chat.js:88
+sendMessage	@	chat.js:36
+(anonymous)	@	chat.js:7

@@ -4,8 +4,14 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 import json
 import re
-from .models import Message, Conversation
+from .models import Message, Conversation, ChatMessage
 from .utils import generate_text
+from django.db import transaction
+from django.utils import timezone
+import logging
+from django.views.decorators.http import require_http_methods
+
+logger = logging.getLogger(__name__)
 
 def home(request):
     return render(request, 'chatbot/home.html')
@@ -23,36 +29,65 @@ def get_prompt_from_history(session_id, latest_user_input, max_messages=10):
     lines.append("AI:")
     return "\n".join(lines)
 
-def chat(request):
-    """チャットの主要なビュー"""
-    session_id = request.session.session_key or request.session.create()
+@login_required
+def chat_view(request):
+    """
+    チャット画面を表示するビュー
+    """
+    # セッションIDの取得または生成
+    session_id = request.session.session_key
+    if not session_id:
+        request.session.save()
+        session_id = request.session.session_key
 
-    if request.method == 'POST':
+    # チャット履歴の取得
+    messages = ChatMessage.objects.filter(session_id=session_id).order_by('timestamp')
+    chat_history = [{'role': msg.role, 'text': msg.message} for msg in messages]
+
+    return render(request, 'chatbot/chat.html', {
+        'chat_history': json.dumps(chat_history),
+        'messages': messages
+    })
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def chat_api(request):
+    """
+    チャットAPIのエンドポイント
+    """
+    try:
+        # ユーザー入力の取得
         user_input = request.POST.get('user_input', '').strip()
         if not user_input:
-            return JsonResponse({"response": "入力が空です。"})
-        
-        try:
-            # プロンプト生成と応答取得
-            prompt = get_prompt_from_history(session_id, user_input)
-            response = generate_text(prompt)
-            response = re.sub(r"http\S+|pic\.twitter\.com/\S+|<unk>", "", response).strip()
-            response = re.sub(r'\s+', ' ', response).strip()
+            return JsonResponse({'error': 'メッセージを入力してください'}, status=400)
 
-            # ログイン時のみ履歴保存
-            if request.user.is_authenticated:
-                Message.objects.bulk_create([
-                    Message(session_id=session_id, role='user', text=user_input),
-                    Message(session_id=session_id, role='ai', text=response)
-                ])
+        # セッションIDの取得または生成
+        session_id = request.session.session_key
+        if not session_id:
+            request.session.save()
+            session_id = request.session.session_key
 
-            return JsonResponse({"response": response})
-        except Exception as e:
-            return JsonResponse({"response": f"AIエラー: {str(e)}"})
+        # ユーザーメッセージの保存
+        ChatMessage.objects.create(
+            session_id=session_id,
+            role='user',
+            message=user_input
+        )
 
-    # GET時の処理
-    messages = Message.objects.filter(session_id=session_id).order_by('timestamp') if request.user.is_authenticated else []
-    return render(request, 'chatbot/chat.html', {'messages': messages})
+        # AIの応答を生成（ここでは簡単な応答を返す）
+        ai_response = f"あなたのメッセージ: {user_input} を受け取りました。"
+
+        # AIの応答を保存
+        ChatMessage.objects.create(
+            session_id=session_id,
+            role='ai',
+            message=ai_response
+        )
+
+        return JsonResponse({'response': ai_response})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
 def chat_history(request):

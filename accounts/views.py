@@ -100,12 +100,13 @@ def register(request):
                 html_content = render_to_string("registration/activate_email.html", {
                     'user': user,
                     'activation_link': activation_link,
+                    'site_name': 'AIチャットボット',
                 })
             
                 msg = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
                 msg.attach_alternative(html_content, "text/html")
                 msg.send()
-            
+                logger.info(f"📧 メール送信成功: {to_email}")
                 messages.success(request, "認証メールを送信しました。")
             except Exception as e:
                 logger.error(f"メール送信失敗: {str(e)}")
@@ -158,6 +159,7 @@ def password_reset(request):
             html_content = render_to_string("registration/password_reset_email.html", {
                 'user': user,
                 'activation_link': activation_link,
+                'site_name': 'AIチャットボット',
             })
 
             msg = EmailMultiAlternatives(subject, text_content, from_email, [to_email])

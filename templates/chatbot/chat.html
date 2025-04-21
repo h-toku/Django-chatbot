@@ -2,53 +2,58 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chatbot</title>
-    <link rel="stylesheet" href="{% static 'chatbot/styles.css' %}">
-</head>
+    <link rel="stylesheet" href="{% static 'chatbot/styles.css' %}" />
+    <link
+      rel="icon"
+      href="{% static 'chatbot/favicon.ico' %}"
+      type="image/x-icon"
+    />
+  </head>
 
-<body>
-<!-- 固定ヘッダー部分 -->
-<div class="fixed-header">
-    <h1 class="chat-title">AIチャットボット</h1>
-    
-    {% if user.is_authenticated %}
-        <div class="user-info">
-            <span>Welcome {{ user.username }}!!</span>
-            <a href="{% url 'logout' %}" class="logout-button">ログアウト</a>
-        </div>
-    {% else %}
-        <a href="{% url 'login' %}" class="login-button" target="_blank">ログイン/会員登録</a>
-    {% endif %}
-</div>
+  <body>
+    <!-- 固定ヘッダー部分 -->
+    <div class="fixed-header">
+      <h1 class="chat-title">AIチャットボット</h1>
 
+      {% if user.is_authenticated %}
+      <div class="user-info">
+        <span>Welcome {{ user.username }}!!</span>
+        <a href="{% url 'logout' %}" class="logout-button">ログアウト</a>
+      </div>
+      {% else %}
+      <a href="{% url 'login' %}" class="login-button" target="_blank"
+        >ログイン/会員登録</a
+      >
+      {% endif %}
+    </div>
 
     <!-- チャット画面 -->
     <div class="chat-container">
-        <div class="chat-box" id="chat-box">
-            <!-- メッセージがここに追加されます -->
-        </div>
-        <div class="input-container">
-            <form id="chat-form" method="POST" onsubmit="sendMessage(); return false;">
-                {% csrf_token %}
-                <textarea id="user-input" name="user_input" placeholder="メッセージを入力..." autocomplete="off"></textarea>
-                <button type="submit" id="send-button">送信</button>
-            </form>
-        </div>
+      <div class="chat-box" id="chat-box">
+        <!-- メッセージがここに追加されます -->
+      </div>
+      <div class="input-container">
+        <form id="chat-form" method="POST">
+          {% csrf_token %}
+          <textarea
+            id="user-input"
+            name="user_input"
+            placeholder="メッセージを入力..."
+            autocomplete="off"
+          ></textarea>
+          <button type="submit" id="send-button">送信</button>
+        </form>
+      </div>
     </div>
 
     <script id="chat-history" type="application/json">
-        {{ chat_history|json_script:"chat-history" }}
+      {{ chat_history|json_script:"chat-history" }}
     </script>
 
-    <script>
-        const chatHistory = JSON.parse(document.getElementById("chat-history-data").textContent);
-    </script>
-    
     <script src="{% static 'chatbot/chat.js' %}"></script>
-</body>
-
+  </body>
 </html>

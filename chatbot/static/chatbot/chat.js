@@ -1,112 +1,138 @@
+// グローバル変数の定義
+let chatHistory = [];
+
+// DOMContentLoadedイベントリスナー
 document.addEventListener("DOMContentLoaded", function () {
+    // チャット履歴の初期化
+    initializeChatHistory();
+    
     // フォームの送信イベントリスナーを追加
     const form = document.getElementById("chat-form");
-    if (!form.hasAttribute('data-listener-added')) {  // リスナーが追加されていなければ
-        form.addEventListener("submit", function (event) {
-            event.preventDefault();  // フォームのデフォルトの送信を防ぐ
-            sendMessage();  // メッセージ送信
-        });
-        form.setAttribute('data-listener-added', 'true');  // リスナーを追加したことをマーク
-    }
-
-    console.log("Event listener added to form.");
-
-    // 履歴の描画
-    renderHistory();  // 履歴の描画関数を呼び出し
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        handleMessageSubmit();
+    });
 });
+
+// チャット履歴の初期化
+function initializeChatHistory() {
+    const chatHistoryElement = document.getElementById("chat-history");
+    if (chatHistoryElement) {
+        try {
+            chatHistory = JSON.parse(chatHistoryElement.textContent);
+            renderHistory();
+        } catch (error) {
+            console.error("Error parsing chat history:", error);
+        }
+    }
+}
 
 // CSRFトークンを取得する関数
 function getCsrfToken() {
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    console.log("CSRF Token:", csrfToken);
-    return csrfToken;
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
 }
 
-// メッセージ送信の関数
-function sendMessage() {
-    const sendButton = document.getElementById("send-button");
-    sendButton.disabled = true;  // 送信ボタンを無効化
-    console.log("Send button disabled.");
-    
+// メッセージ送信の処理
+function handleMessageSubmit() {
     const userInputElement = document.getElementById("user-input");
     const userInput = userInputElement.value.trim();
-    console.log("User input:", userInput);
     
-    if (userInput) {
-        appendMessage(userInput, "user");
-        
-        userInputElement.value = "";  // 入力フィールドを空にする
-        console.log("typingElement:", typingElement);
+    if (!userInput) return;
 
-        const csrfToken = getCsrfToken();
+    // 送信ボタンを無効化
+    const sendButton = document.getElementById("send-button");
+    sendButton.disabled = true;
 
-        console.log("Sending message...");
-        setTimeout(() => {
-            fetch("/chat/api/chat/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-CSRFToken": csrfToken
-                },
-                body: "user_input=" + encodeURIComponent(userInput)
-            })
-            .then(response => response.json())
-            .then(data => {
-                typingElement.remove();  // ← ここで削除
-        
-                if (data && data.response) {
-                    appendMessage(data.response, "bot");
-                } else {
-                    appendMessage("AIからの応答がありませんでした。", "bot");
-                }
-            })
-            .catch(error => {
-                typingElement.remove();
-                appendMessage("通信エラーが発生しました。", "bot");
-            })
-            .finally(() => {
-                sendButton.disabled = false;
-            });
-        }, 100);  // ← 100ミリ秒遅らせて「入力中...」が確実に表示されるように
+    // ユーザーメッセージを表示
+    displayUserMessage(userInput);
+    userInputElement.value = "";
 
-        console.log("Message sent to server.");
-    } else {
-        console.log("User input is empty, message not sent.");
-        sendButton.disabled = false;
+    // 入力中表示を追加
+    displayTypingIndicator();
+
+    // サーバーにリクエストを送信
+    sendRequestToServer(userInput)
+        .then(response => {
+            removeTypingIndicator();
+            if (response && response.response) {
+                displayBotMessage(response.response);
+            } else {
+                displayBotMessage("AIからの応答がありませんでした。");
+            }
+        })
+        .catch(error => {
+            removeTypingIndicator();
+            displayBotMessage("通信エラーが発生しました。");
+        })
+        .finally(() => {
+            sendButton.disabled = false;
+        });
+}
+
+// サーバーにリクエストを送信
+function sendRequestToServer(userInput) {
+    return fetch("/chat/api/chat/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": getCsrfToken()
+        },
+        body: "user_input=" + encodeURIComponent(userInput)
+    }).then(response => response.json());
+}
+
+// ユーザーメッセージを表示
+function displayUserMessage(message) {
+    const messageElement = createMessageElement(message, "user-message");
+    document.getElementById("chat-box").appendChild(messageElement);
+    scrollToBottom();
+}
+
+// ボットメッセージを表示
+function displayBotMessage(message) {
+    const messageElement = createMessageElement(message, "bot-message");
+    document.getElementById("chat-box").appendChild(messageElement);
+    scrollToBottom();
+}
+
+// 入力中表示を追加
+function displayTypingIndicator() {
+    const typingElement = createMessageElement("入力中...", "bot-message");
+    typingElement.id = "typing-indicator";
+    document.getElementById("chat-box").appendChild(typingElement);
+    scrollToBottom();
+}
+
+// 入力中表示を削除
+function removeTypingIndicator() {
+    const typingIndicator = document.getElementById("typing-indicator");
+    if (typingIndicator) {
+        typingIndicator.remove();
     }
 }
 
-// メッセージをチャットボックスに追加する関数
-function appendMessage(message, sender) {
+// メッセージ要素を作成
+function createMessageElement(text, className) {
+    const element = document.createElement("div");
+    element.classList.add("message", className);
+    element.innerText = text;
+    return element;
+}
+
+// チャットボックスを最下部にスクロール
+function scrollToBottom() {
     const chatBox = document.getElementById("chat-box");
-
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("message");
-    
-    if (sender === "user") {
-        messageElement.classList.add("user-message");
-        appendMessage("入力中...", "bot", true);
-        console.log("Typing element added.");
-    } else {
-        messageElement.classList.add("bot-message");
-    }
-
-    messageElement.innerText = message;
-    chatBox.appendChild(messageElement);
     chatBox.scrollTop = chatBox.scrollHeight;
-
-    return returnElement ? messageElement : undefined;
 }
 
-// ページ初期表示時に履歴を描画する関数
+// 履歴を描画
 function renderHistory() {
-    if (typeof chatHistory === 'undefined') {
-        console.warn("chatHistory is not defined.");
-        return;
-    }
+    if (!Array.isArray(chatHistory)) return;
 
     chatHistory.forEach(msg => {
-        const sender = msg.role === 'user' ? 'user' : 'bot';
-        appendMessage(msg.text, sender);
+        const className = msg.role === 'user' ? 'user-message' : 'bot-message';
+        const messageElement = createMessageElement(msg.text, className);
+        document.getElementById("chat-box").appendChild(messageElement);
     });
+    scrollToBottom();
 }

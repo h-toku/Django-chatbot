@@ -177,6 +177,22 @@ EMAIL_HOST_USER = '2df79004e826ba13769e3627dc90ce2e'        # 例: 8f5d3f8ab9eXX
 EMAIL_HOST_PASSWORD = '218bfc23f541acdf6fe036f9c14a9245'  # 例: b721d91e1e2fXXXXX
 DEFAULT_FROM_EMAIL = 'toku.chatbot@gmail.com'
 
+# メール認証の設定
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
+ACCOUNT_EMAIL_CONFIRMATION_HMAC = True
+
+# パスワードリセットの設定
+PASSWORD_RESET_TIMEOUT = 86400  # 24時間
+PASSWORD_RESET_EMAIL_TEMPLATE = 'accounts/password_reset_email.html'
+PASSWORD_RESET_CONFIRM_TEMPLATE = 'accounts/password_reset_confirm.html'
+
+# メールテンプレートの設定
+EMAIL_TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates', 'email')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
