@@ -3,11 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 import json
-import re
-from .models import Message, Conversation, ChatMessage
-from .utils import generate_text
-from django.db import transaction
-from django.utils import timezone
+from .models import Conversation, ChatMessage
 import logging
 from django.views.decorators.http import require_http_methods
 
@@ -18,13 +14,15 @@ def home(request):
 
 def get_prompt_from_history(session_id, latest_user_input, max_messages=10):
     """履歴からプロンプトを生成する"""
-    messages = Message.objects.filter(session_id=session_id).order_by('-timestamp')[:max_messages][::-1]
+    messages = ChatMessage.objects.filter(
+        session_id=session_id
+    ).order_by('-timestamp')[:max_messages][::-1]
     lines = []
 
     if messages:
         for m in messages:
             role = "ユーザー" if m.role == "user" else "AI"
-            lines.append(f"{role}: {m.text}")
+            lines.append(f"{role}: {m.message}")
     lines.append(f"ユーザー: {latest_user_input}")
     lines.append("AI:")
     return "\n".join(lines)
@@ -96,8 +94,8 @@ def chat_history(request):
     if not session_id:
         return JsonResponse({"history": []})
 
-    messages = Message.objects.filter(session_id=session_id).order_by('timestamp')
-    history = [{"role": m.role, "text": m.text} for m in messages]
+    messages = ChatMessage.objects.filter(session_id=session_id).order_by('timestamp')
+    history = [{"role": m.role, "text": m.message} for m in messages]
     return JsonResponse({"history": history})
 
 @csrf_exempt
