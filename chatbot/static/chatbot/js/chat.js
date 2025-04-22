@@ -89,7 +89,7 @@ class ChatApp {
     }
 
     async sendMessage(message) {
-        const response = await fetch('/chat/api/', {
+        const response = await fetch('/api/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
