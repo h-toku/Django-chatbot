@@ -27,7 +27,6 @@ def get_prompt_from_history(session_id, latest_user_input, max_messages=10):
     lines.append("AI:")
     return "\n".join(lines)
 
-@login_required
 def chat_view(request):
     """
     チャット画面を表示するビュー
@@ -48,14 +47,17 @@ def chat_view(request):
     })
 
 @csrf_exempt
+@login_required
 @require_http_methods(["POST"])
 def chat_api(request):
     """
     チャットAPIのエンドポイント
     """
     try:
-        # ユーザー入力の取得
-        user_input = request.POST.get('user_input', '').strip()
+        # リクエストボディからJSONデータを取得
+        data = json.loads(request.body)
+        user_input = data.get('user_input', '').strip()
+
         if not user_input:
             return JsonResponse({'error': 'メッセージを入力してください'}, status=400)
 
@@ -84,7 +86,10 @@ def chat_api(request):
 
         return JsonResponse({'response': ai_response})
 
+    except json.JSONDecodeError:
+        return JsonResponse({'error': '無効なJSONデータです'}, status=400)
     except Exception as e:
+        logger.error(f"チャットAPIエラー: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
@@ -104,7 +109,7 @@ def save_conversation(request):
     """会話を保存"""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST only'}, status=400)
-    
+
     try:
         data = json.loads(request.body)
         convo = Conversation.objects.create(

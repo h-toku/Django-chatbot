@@ -10,12 +10,22 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class RegisterForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput)
-    confirm_password = forms.CharField(widget=forms.PasswordInput)
+    email = forms.EmailField(
+        label='メールアドレス',
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
+    )
+    password = forms.CharField(
+        label='パスワード',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+    confirm_password = forms.CharField(
+        label='パスワード（確認）',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password']
+        fields = ['email', 'password']
 
     def clean(self):
         cleaned_data = super().clean()

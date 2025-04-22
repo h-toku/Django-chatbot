@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}チャットボット{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'chatbot/css/styles.css' %}" />
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul>
+          <li><a href="{% url 'chatbot:chat' %}">チャット</a></li>
+          {% if user.is_authenticated %}
+          <li><a href="{% url 'accounts:logout' %}">ログアウト</a></li>
+          {% else %}
+          <li><a href="{% url 'accounts:login' %}">ログイン</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </header>
+
+    <main>{% block content %}{% endblock %}</main>
+
+    <footer>
+      <p>&copy; 2024 チャットボット</p>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

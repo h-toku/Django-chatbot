@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}認証メール送信完了{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body text-center">
+          <h2 class="card-title mb-4">認証メールを送信しました</h2>
+          <p class="mb-4">
+            ご登録いただいたメールアドレスに認証メールを送信しました。<br />
+            メールに記載されているリンクをクリックして、アカウントを認証してください。
+          </p>
+          <div class="mb-4">
+            <p>メールが届かない場合は、以下のボタンから再送できます：</p>
+            <form
+              method="post"
+              action="{% url 'accounts:resend_verification' %}"
+            >
+              {% csrf_token %}
+              <input
+                type="email"
+                name="email"
+                class="form-control mb-3"
+                placeholder="メールアドレス"
+                required
+              />
+              <button type="submit" class="btn btn-primary">
+                認証メールを再送
+              </button>
+            </form>
+          </div>
+          <div class="mt-4">
+            <a href="{% url 'accounts:login' %}" class="btn btn-secondary"
+              >ログインページへ</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

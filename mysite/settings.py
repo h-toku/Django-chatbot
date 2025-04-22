@@ -11,13 +11,11 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-import dj_database_url
 import os
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -34,9 +32,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -66,7 +62,10 @@ ROOT_URLCONF = 'mysite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates',],
+        'DIRS': [
+            BASE_DIR / 'templates',
+            BASE_DIR / 'accounts' / 'templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -90,29 +89,28 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 LOGIN_URL = '/accounts/login/'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 load_dotenv()
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost']
 
-
 # CSRF設定
 CSRF_COOKIE_SECURE = False  # HTTPSを使用する場合
 SESSION_COOKIE_SECURE = False  # HTTPSを使用する場合
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # ブラウザを閉じるとセッションを無効化
 SECURE_HSTS_SECONDS = 0  # 開発環境では無効にする
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -150,7 +148,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
@@ -166,16 +163,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'chatbot.CustomUser'
 
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-#Gmailを使用する場合は以下をコメントアウトして設定
-
+# メール設定
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'in-v3.mailjet.com'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = '2df79004e826ba13769e3627dc90ce2e'        # 例: 8f5d3f8ab9eXXXXX
-EMAIL_HOST_PASSWORD = '218bfc23f541acdf6fe036f9c14a9245'  # 例: b721d91e1e2fXXXXX
+EMAIL_HOST_USER = 'toku.chatbot@gmail.com'
+EMAIL_HOST_PASSWORD = 'zhpb qflw xxmg gnwd'
 DEFAULT_FROM_EMAIL = 'toku.chatbot@gmail.com'
+SERVER_EMAIL = 'toku.chatbot@gmail.com'
 
 # メール認証の設定
 ACCOUNT_EMAIL_REQUIRED = True
@@ -193,6 +189,7 @@ PASSWORD_RESET_CONFIRM_TEMPLATE = 'accounts/password_reset_confirm.html'
 # メールテンプレートの設定
 EMAIL_TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates', 'email')
 
+# ログ設定
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -201,16 +198,32 @@ LOGGING = {
             'class': 'logging.StreamHandler',
         },
         'file': {
-    'class': 'logging.FileHandler',
-    'filename': os.path.join(BASE_DIR, 'logs', 'debug.log'),
-},
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'debug.log'),
+        },
     },
     'loggers': {
-        'django.core.mail': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+        },
+        'django.request': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
         },
-        'accounts': {  # アカウントアプリのログ
+        'django.template': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+        },
+        'django.db.backends': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+        },
+        'django.security': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+        },
+        'django.core.mail': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
         },
