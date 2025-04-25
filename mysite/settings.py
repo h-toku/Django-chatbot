@@ -198,9 +198,9 @@ LOGGING = {
             'class': 'logging.StreamHandler',
         },
         'file': {
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs', 'debug.log'),
-        },
+    'class': 'logging.FileHandler',
+    'filename': os.path.join(BASE_DIR, 'logs', 'debug.log'),
+},
     },
     'loggers': {
         'django': {
